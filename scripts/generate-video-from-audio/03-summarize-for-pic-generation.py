@@ -18,7 +18,9 @@ tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=T
 for i, segment in enumerate(segments):
     text = segments[i]["translated_text"][0].replace(".", " ")
     inputs = tokenizer(
-        "Instruct: Summarize this text as description of movie in 8 words or less: '" + text + "'\nOutput:",
+        "Instruct: Summarize this text as description of movie in 8 words or less: '"
+        + text
+        + "'\nOutput:",
         return_tensors="pt",
         return_attention_mask=False,
     )
@@ -30,8 +32,8 @@ for i, segment in enumerate(segments):
         text = outputs[1]
     else:
         text = outputs[-1]
-    text = text.split("<|endoftext|>")[0].strip()       
-    
+    text = text.split("<|endoftext|>")[0].strip()
+
     segments[i]["summarized"] = text
     print(text)
 

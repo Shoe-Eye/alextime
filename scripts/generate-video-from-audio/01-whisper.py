@@ -7,15 +7,14 @@ model_size = "medium"
 model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
 segments, _ = model.transcribe(
-    "./calls/2023-12-21.m4a",
+    "./calls/2024-02-23.m4a",
     vad_filter=True,
     vad_parameters=dict(min_silence_duration_ms=500),
     language="ru",
 )
 data = []
 for segment in segments:
-    data.append({"start": segment.start,
-                "end": segment.end, "text": segment.text})
+    data.append({"start": segment.start, "end": segment.end, "text": segment.text})
     print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
 
 # save segments to json file

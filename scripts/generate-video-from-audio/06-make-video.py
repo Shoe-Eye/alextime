@@ -7,16 +7,15 @@ from moviepy.editor import *
 with open("data/segments.json", "r") as f:
     segments = json.load(f)
 
-clips_ = list(sorted(glob.glob("./clips/*.mp4")))
+clips_ = list(sorted(glob.glob("./data/*.png")))
 print(clips_)
 
 # create clips from images with specified durations
 clips = []
 for i, segment in enumerate(segments):
-    start=int(segment["start"])
-    end=int(segment["end"])
-    clip = VideoFileClip(
-        clips_[i]).loop(duration=end-start).set_start(start).set_end(end)
+    start = int(segment["start"])
+    end = int(segment["end"])
+    clip = ImageClip(clips_[i]).loop(duration=end - start).set_start(start).set_end(end)
     clips.append(clip)
 
 # concatenate clips into final video
