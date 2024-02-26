@@ -7,7 +7,7 @@ model_size = "medium"
 model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
 segments, _ = model.transcribe(
-    "./calls/2024-02-23.m4a",
+    "./calls/2024-02-23.mp3",
     vad_filter=True,
     vad_parameters=dict(min_silence_duration_ms=500),
     language="ru",

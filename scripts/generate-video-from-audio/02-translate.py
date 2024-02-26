@@ -23,7 +23,7 @@ for i, segment in enumerate(segments):
         **encoded, forced_bos_token_id=tokenizer.get_lang_id("en")
     )
     translated_text = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
-    segments[i]["translated_text"] = translated_text
+    segments[i]["translated_text"] = translated_text[0]
 
 # save segments to json file
 with open("data/segments.json", "w") as f:

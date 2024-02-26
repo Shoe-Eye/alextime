@@ -15,6 +15,6 @@ pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float
 pipe = pipe.to("cuda")
 
 for i, segment in enumerate(segments):
-    image = pipe(segment["summarized"] + "| painting 19 century").images[0]
+    image = pipe(segment["summarized"] + "| art painting").images[0]
 
     image.save("./data/" + str(i) + ".png")
