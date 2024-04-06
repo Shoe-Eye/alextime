@@ -1,22 +1,13 @@
 import torch
 import json
 
-from diffusers import (
-    StableDiffusionXLPipeline,
-    KDPM2AncestralDiscreteScheduler,
-    AutoencoderKL,
-)
+from diffusers import StableDiffusionPipeline, AutoencoderKL
 
-# Load VAE component
-vae = AutoencoderKL.from_pretrained(
-    "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
-)
+repo = "IDKiro/sdxs-512-0.9"
+seed = 42
+weight_type = torch.float32  # or float16
 
-# Configure the pipeline
-pipe = StableDiffusionXLPipeline.from_pretrained(
-    "dataautogpt3/ProteusV0.4", vae=vae, torch_dtype=torch.float16
-)
-pipe.scheduler = KDPM2AncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+pipe = StableDiffusionPipeline.from_pretrained(repo, torch_dtype=weight_type)
 pipe.to("cuda")
 
 
@@ -27,16 +18,14 @@ with open("data/segments.json", "r") as f:
 
 for i, segment in enumerate(segments):
 
-    prompt = segment["summarized"] + "best quality, extremely detailed, cartoon"
+    prompt = segment["summarized"] + ", photograph, moody light, golden hour"
     negative_prompt = "nsfw, bad quality, bad anatomy, worst quality, low quality, low resolutions, extra fingers, blur, blurry, ugly, wrongs proportions, watermark, image artifacts, lowres, ugly, jpeg artifacts, deformed, noisy image"
 
     image = pipe(
         prompt,
-        negative_prompt=negative_prompt,
-        width=1024,
-        height=1024,
-        guidance_scale=4,
-        num_inference_steps=20,
+        num_inference_steps=1,
+        guidance_scale=0,
+        generator=torch.Generator(device="cuda").manual_seed(seed),
     ).images[0]
 
     image.save("./data/" + str(i) + ".png")

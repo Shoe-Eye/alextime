@@ -6,10 +6,10 @@ model_size = "medium"
 # Run on GPU with FP16
 model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
-FILENAME = "2017-11-02"
+FILENAME = "2024-04-04"
 
 segments, _ = model.transcribe(
-    "./calls/" + FILENAME + ".mp3",
+    "./calls/" + FILENAME + ".m4a",
     vad_filter=True,
     vad_parameters=dict(min_silence_duration_ms=500),
     language="ru",
