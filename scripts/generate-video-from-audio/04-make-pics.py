@@ -1,31 +1,31 @@
 import torch
 import json
 
-from diffusers import StableDiffusionPipeline, AutoencoderKL
+from diffusers import StableDiffusionXLPipeline
 
-repo = "IDKiro/sdxs-512-0.9"
 seed = 42
-weight_type = torch.float32  # or float16
 
-pipe = StableDiffusionPipeline.from_pretrained(repo, torch_dtype=weight_type)
-pipe.to("cuda")
+pipe = StableDiffusionXLPipeline.from_pretrained(
+    "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
+).to("cuda")
 
-
+pipe.load_lora_weights(
+    "/home/cwiz/code/ai/diffusers/examples/dreambooth/alextime",
+    weight_name="pytorch_lora_weights.safetensors",
+    adapter_name="alextime",
+)
 # read data/segments.json
 with open("data/segments.json", "r") as f:
     segments = json.load(f)
 
-
 for i, segment in enumerate(segments):
 
-    prompt = segment["summarized"] + ", photograph, moody light, golden hour"
-    negative_prompt = "nsfw, bad quality, bad anatomy, worst quality, low quality, low resolutions, extra fingers, blur, blurry, ugly, wrongs proportions, watermark, image artifacts, lowres, ugly, jpeg artifacts, deformed, noisy image"
+    prompt = "Criminal movie poster about alextime `" + segment["summary"] + "`"
 
     image = pipe(
         prompt,
-        num_inference_steps=1,
-        guidance_scale=0,
-        generator=torch.Generator(device="cuda").manual_seed(seed),
+        num_inference_steps=60,
+        guidance_scale=8.5,
     ).images[0]
 
     image.save("./data/" + str(i) + ".png")

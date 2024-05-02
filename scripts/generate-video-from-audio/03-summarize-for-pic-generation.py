@@ -1,7 +1,7 @@
 import torch
 import json
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 torch.set_default_device("cuda")
 
@@ -10,32 +10,45 @@ with open("data/segments.json", "r") as f:
     segments = json.load(f)
 
 model = AutoModelForCausalLM.from_pretrained(
-    "microsoft/phi-2", torch_dtype="auto", trust_remote_code=True
+    "microsoft/Phi-3-mini-4k-instruct",
+    device_map="cuda",
+    torch_dtype="auto",
+    trust_remote_code=True,
 )
-tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
 
 
+pipe = pipeline(
+    "text-generation",
+    model=model,
+    tokenizer=tokenizer,
+)
 for i, segment in enumerate(segments):
     text = segments[i]["translated_text"].replace(".", " ")
-    inputs = tokenizer(
-        "Instruct: Summarize this text as description of anime painting in 5 words or less: '"
-        + text
-        + "'\nOutput:",
-        return_tensors="pt",
-        return_attention_mask=False,
-    )
-    outputs = model.generate(**inputs, max_length=200)
+    messages = [
+        {
+            "role": "user",
+            "content": """
+            Summarize this text in 5 words or less as movie title about alextime. 
+            RESPOND ONLY WITH movie title AND NOTHING ELSE. DO NOT EXPLAIN YOUR REASONING.
+            Text: `"""
+            + text
+            + "`",
+        }
+    ]
 
-    text = tokenizer.batch_decode(outputs)[0]
-    outputs = text.split("Output:")
-    if len(outputs) > 2:
-        text = outputs[1]
-    else:
-        text = outputs[-1]
-    text = text.split("<|endoftext|>")[0].strip()
-
-    segments[i]["summarized"] = text
+    generation_args = {
+        "max_new_tokens": 500,
+        "return_full_text": False,
+        "temperature": 0.0,
+        "do_sample": False,
+    }
+    output = pipe(messages, **generation_args)
+    text = output[0]["generated_text"].strip()
+    text = text.split("\n")[0] if len(text.split("\n")) > 0 else text
+    text = text.replace('"', "")
     print(text)
+    segments[i]["summary"] = text
 
 # save segments to json file
 with open("data/segments.json", "w") as f:
